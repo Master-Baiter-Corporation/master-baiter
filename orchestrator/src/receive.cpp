@@ -3,6 +3,8 @@
 #include "std_msgs/msg/string.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 
+#define COMMAND_DURATION_MS 3500
+
 using std::placeholders::_1;
 
 class MinimalSubscriber : public rclcpp::Node {
@@ -13,32 +15,38 @@ public:
         
         cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/cmd_vel", 10);
+        
+        stop_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(COMMAND_DURATION_MS),
+            std::bind(&MinimalSubscriber::stop_robot, this));
+        
+        stop_timer_->cancel();
     }
 
 private:
-    void topic_callback(const std_msgs::msg::String& msg) const {
+    void topic_callback(const std_msgs::msg::String& msg) {
         RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg.data.c_str());
         
         auto twist_msg = geometry_msgs::msg::Twist();
         
         if (msg.data == "avance") {
-            twist_msg.linear.x = 0.5;  // Move forward
+            twist_msg.linear.x = 0.5;
             twist_msg.angular.z = 0.0;
         }
         else if (msg.data == "recule") {
-            twist_msg.linear.x = -0.5;  // Move backward
+            twist_msg.linear.x = -0.5;
             twist_msg.angular.z = 0.0;
         }
         else if (msg.data == "gauche") {
             twist_msg.linear.x = 0.0;
-            twist_msg.angular.z = 0.5;  // Turn left
+            twist_msg.angular.z = 0.5;
         }
         else if (msg.data == "droite") {
             twist_msg.linear.x = 0.0;
-            twist_msg.angular.z = -0.5;  // Turn right
+            twist_msg.angular.z = -0.5;
         }
         else if (msg.data == "lucien") {
-            twist_msg.linear.x = 0.0;  // Stop
+            twist_msg.linear.x = 0.0;
             twist_msg.angular.z = 0.0;
         }
         else {
@@ -48,10 +56,26 @@ private:
         
         cmd_vel_publisher_->publish(twist_msg);
         RCLCPP_INFO(this->get_logger(), "Published cmd_vel");
+        
+        // Reset and restart the timer
+        stop_timer_->reset();
+    }
+    
+    void stop_robot() {
+        auto twist_msg = geometry_msgs::msg::Twist();
+        twist_msg.linear.x = 0.0;
+        twist_msg.angular.z = 0.0;
+        
+        cmd_vel_publisher_->publish(twist_msg);
+        RCLCPP_INFO(this->get_logger(), "Auto-stop: Published zero cmd_vel");
+        
+        // Cancel timer until next command
+        stop_timer_->cancel();
     }
     
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
+    rclcpp::TimerBase::SharedPtr stop_timer_;
 };
 
 int main(int argc, char* argv[]) {
