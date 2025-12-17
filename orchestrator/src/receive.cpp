@@ -10,7 +10,7 @@ using std::placeholders::_1;
 class MinimalSubscriber : public rclcpp::Node {
 public:
     MinimalSubscriber() : Node("minimal_subscriber") {
-        subscription_ = this->create_subscription<std_msgs::msg::String>(
+        cmd_subscription_ = this->create_subscription<std_msgs::msg::String>(
             "baiter_cmd", 10, std::bind(&MinimalSubscriber::topic_callback, this, _1));
         
         cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
@@ -73,7 +73,7 @@ private:
         stop_timer_->cancel();
     }
     
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr cmd_subscription_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
     rclcpp::TimerBase::SharedPtr stop_timer_;
 };
