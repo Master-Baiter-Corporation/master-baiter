@@ -1,0 +1,73 @@
+############################
+# Python / venv / caches
+############################
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pkl
+*.pickle
+*.joblib
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+############################
+# Build / packaging
+############################
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+############################
+# TensorFlow / Keras / ML
+############################
+# Models / weights
+*.h5
+*.keras
+saved_model/
+SavedModel/
+checkpoints/
+checkpoint
+*.ckpt*
+*.pb
+*.tflite
+
+# Datasets / arrays
+*.npy
+*.npz
+*.pt
+*.pth
+*.onnx
+
+############################
+# Audio (évite de commiter des gros sons)
+############################
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+
+############################
+# OS / editors
+############################
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+############################
+# Docker / misc
+############################
+*.tmp
+*.bak
