@@ -61,7 +61,7 @@ Master Baiter is an intelligent autonomous robot built on the TurtleBot3 platfor
 
 ## The Master Baiter team
 
-Elian Delmas
+Élian Delmas
 Antoine Desmartin
 Logan Lucas
 Valentin Quiot
