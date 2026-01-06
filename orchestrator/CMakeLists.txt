@@ -10,6 +10,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -23,7 +24,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 add_executable(listener src/receive.cpp)
-ament_target_dependencies(listener rclcpp std_msgs geometry_msgs nav_msgs)
+ament_target_dependencies(listener rclcpp std_msgs geometry_msgs nav_msgs sensor_msgs)
 
 install(TARGETS
   listener

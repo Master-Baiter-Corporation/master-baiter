@@ -5,6 +5,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 #define COMMAND_DURATION_MS 3500
 
@@ -12,6 +13,8 @@
 #define ANGULAR_TOLERANCE 0.05   // radians
 #define LINEAR_SPEED 0.3
 #define ANGULAR_SPEED 0.5
+#define COLLISION_DISTANCE 0.3   // meters
+#define FRONT_ANGLE_RANGE 0.5    // radians
 
 using std::placeholders::_1;
 
@@ -20,6 +23,7 @@ public:
     MinimalSubscriber() : Node("minimal_subscriber"), 
                           is_navigating_(false),
                           has_goal_(false),
+                          obstacle_detected_(false),
                           initial_x_(0.0), 
                           initial_y_(0.0),
                           initial_yaw_(0.0),
@@ -35,6 +39,9 @@ public:
         
         odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "/odom", 10, std::bind(&MinimalSubscriber::odom_callback, this, _1));
+        
+        scan_subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+            "/scan", 10, std::bind(&MinimalSubscriber::scan_callback, this, _1));
         
         cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/cmd_vel", 10);
@@ -84,8 +91,14 @@ private:
             return;
         }
         
-        cmd_vel_publisher_->publish(twist_msg);
-        RCLCPP_INFO(this->get_logger(), "Published cmd_vel");
+        // Check for obstacles before publishing movement command
+        if (check_safe_to_move(twist_msg)) {
+            cmd_vel_publisher_->publish(twist_msg);
+            RCLCPP_INFO(this->get_logger(), "Published cmd_vel");
+        } else {
+            RCLCPP_WARN(this->get_logger(), "Obstacle detected! Stopping robot.");
+            publish_stop_command();
+        }
         
         stop_timer_->reset();
     }
@@ -121,6 +134,10 @@ private:
         }
     }
     
+    void scan_callback(const sensor_msgs::msg::LaserScan& msg) {
+        obstacle_detected_ = detect_front_obstacle(msg);
+    }
+    
     // ========== Navigation Functions ==========
     
     void handle_lucien_command() {
@@ -137,6 +154,14 @@ private:
     
     void navigation_control_loop() {
         if (!is_navigating_) {
+            return;
+        }
+        
+        // Check for obstacles first
+        if (obstacle_detected_) {
+            RCLCPP_WARN(this->get_logger(), "Obstacle detected during navigation! Stopping.");
+            publish_stop_command();
+            stop_navigation();
             return;
         }
         
@@ -173,22 +198,64 @@ private:
     void stop_navigation() {
         is_navigating_ = false;
         navigation_timer_->cancel();
-        
-        auto twist_msg = geometry_msgs::msg::Twist();
-        twist_msg.linear.x = 0.0;
-        twist_msg.angular.z = 0.0;
-        cmd_vel_publisher_->publish(twist_msg);
+        publish_stop_command();
     }
     
     void stop_robot() {
+        publish_stop_command();
+        RCLCPP_INFO(this->get_logger(), "Auto-stop: Published zero cmd_vel");
+        stop_timer_->cancel();
+    }
+    
+    // ========== Collision Detection Functions ==========
+    
+    bool detect_front_obstacle(const sensor_msgs::msg::LaserScan& scan) {
+        // LiDAR typically has angle_min at the right side and goes counterclockwise
+        // We want to check the front of the robot (around 0 radians)
+        
+        int num_readings = scan.ranges.size();
+        if (num_readings == 0) {
+            return false;
+        }
+        
+        // Calculate which indices correspond to the front cone
+        for (size_t i = 0; i < scan.ranges.size(); ++i) {
+            float angle = scan.angle_min + i * scan.angle_increment;
+            
+            // Check if this reading is in the front cone (±FRONT_ANGLE_RANGE)
+            if (std::abs(angle) <= FRONT_ANGLE_RANGE || 
+                std::abs(angle - 2*M_PI) <= FRONT_ANGLE_RANGE || 
+                std::abs(angle + 2*M_PI) <= FRONT_ANGLE_RANGE) {
+                
+                float range = scan.ranges[i];
+                
+                // Check if reading is valid and within collision distance
+                if (std::isfinite(range) && 
+                    range >= scan.range_min && 
+                    range <= scan.range_max &&
+                    range < COLLISION_DISTANCE) {
+                    return true;  // Obstacle detected!
+                }
+            }
+        }
+        
+        return false;  // No obstacle in front
+    }
+    
+    bool check_safe_to_move(const geometry_msgs::msg::Twist& twist_msg) {
+        // Only check for obstacles if moving forward
+        if (twist_msg.linear.x > 0.0) {
+            return !obstacle_detected_;
+        }
+        // Allow backward movement and rotations even with front obstacles
+        return true;
+    }
+    
+    void publish_stop_command() {
         auto twist_msg = geometry_msgs::msg::Twist();
         twist_msg.linear.x = 0.0;
         twist_msg.angular.z = 0.0;
-        
         cmd_vel_publisher_->publish(twist_msg);
-        RCLCPP_INFO(this->get_logger(), "Auto-stop: Published zero cmd_vel");
-        
-        stop_timer_->cancel();
     }
     
     // ========== Utility Functions ==========
@@ -244,12 +311,14 @@ private:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr cmd_subscription_;
     rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr goal_subscription_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscription_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_subscription_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
     rclcpp::TimerBase::SharedPtr stop_timer_;
     rclcpp::TimerBase::SharedPtr navigation_timer_;
     
     bool is_navigating_;
     bool has_goal_;
+    bool obstacle_detected_;
     
     double goal_x_, goal_y_;
     double initial_x_, initial_y_, initial_yaw_;
