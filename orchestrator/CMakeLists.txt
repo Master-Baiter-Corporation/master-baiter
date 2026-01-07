@@ -11,6 +11,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(odas_ros_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -23,10 +24,29 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
 add_executable(listener src/receive.cpp)
-ament_target_dependencies(listener rclcpp std_msgs geometry_msgs nav_msgs sensor_msgs)
+ament_target_dependencies(listener
+    rclcpp
+    std_msgs
+    geometry_msgs
+    nav_msgs
+    sensor_msgs
+)
+
+add_executable(odas_listener src/soundgoal.cpp)
+ament_target_dependencies(odas_listener
+    rclcpp
+    geometry_msgs
+    odas_ros_msgs
+)
 
 install(TARGETS
   listener
+  odas_listener
   DESTINATION lib/${PROJECT_NAME})
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
 ament_package()
