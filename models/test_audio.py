@@ -4,6 +4,7 @@ import librosa
 from tensorflow import keras
 import tensorflow as tf
 from difflib import SequenceMatcher
+import argparse
 
 SR = 16000
 N_MELS = 64
@@ -129,7 +130,7 @@ def predict_file(interpreter, wav_path: Path, label_names, window_s: float = 1.0
                         triggers.append(label_names[pred_idx])
                 else:
                     triggers.append(label_names[pred_idx])
-            print(f"{label_names[pred_idx]} ({float(np.max(probs)):.3f})")
+            #print(f"{label_names[pred_idx]} ({float(np.max(probs)):.3f})")
             last_pred_idx = pred_idx
 
     probs_all = np.asarray(probs_all)
@@ -138,6 +139,13 @@ def predict_file(interpreter, wav_path: Path, label_names, window_s: float = 1.0
     return avg_probs, top, triggers
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Test audio file with trained models")
+    parser.add_argument("audio_file", nargs='?', default="a.wav", 
+                        help="Audio file to test (default: a.wav)")
+    parser.add_argument("--ground-truth", nargs='+', 
+                        help="Ground truth labels (optional)")
+    args = parser.parse_args()
+
     REPO = Path(__file__).resolve().parents[1]
 
     WAV_PATH = REPO / "data" / "sound_test" / "a.wav"
@@ -160,7 +168,8 @@ if __name__ == "__main__":
     else:
         label_names = ["avance", "droite", "gauche", "lucien", "recule", "silence", "unk"]
 
-    y_true = ['avance', 'recule', 'droite', 'lucien', 'gauche', 'droite', 'lucien', 'recule', 'avance', 'gauche', 'avance', 'recule']
+    y_true = args.ground_truth if args.ground_truth else ['avance', 'recule', 'droite', 'lucien', 'gauche', 'droite', 'lucien', 'recule', 'avance', 'gauche', 'avance', 'recule']
+    print(f"Hardcoded true labels: {y_true}")
 
     print("\n--- Modèle de base ---")
     probs, top, triggers = predict_file(interpreter_base, WAV_PATH, label_names, hop_s=0.25)
