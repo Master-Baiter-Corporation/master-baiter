@@ -77,7 +77,7 @@ def predict_file(model, wav_path: Path, label_names, window_s: float = 1.0, hop_
 if __name__ == "__main__":
     REPO = Path(__file__).resolve().parents[1]  # remonte de /models vers la racine
 
-    WAV_PATH = REPO / "data" / "sound_test" / "antoine1_sound.wav"
+    WAV_PATH = REPO / "data" / "sound_test" / "test_val.wav"
     MODEL_PATH = REPO / "models" / "yamnet_trained_model.h5"
     DATASET_NPZ = REPO / "audio_dataset_augmented.npz"  # optionnel
 

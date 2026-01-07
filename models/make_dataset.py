@@ -300,8 +300,8 @@ def load_dataset(file_path):
 
 if __name__ == "__main__":
     # Configuration
-    ROOT_DIR = "audios_cleans"  # Change this to your folder path
-    OUTPUT_FILE = "audio_dataset_augmented.npz"  # Output filename
+    ROOT_DIR = "../../audios_bot/"  # Change this to your folder path
+    OUTPUT_FILE = "audio__bot_dataset_augmented.npz"  # Output filename
     
     # Create dataset
     print("Creating Audio Spectrogram Dataset with Data Augmentation...")

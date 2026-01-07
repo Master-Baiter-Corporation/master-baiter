@@ -32,14 +32,17 @@ pip-wheel-metadata/
 ############################
 # Models / weights
 *.h5
+*.tflite
 *.keras
+!models/yamnet_finetuned_model.tflite
+!models/model_pruned.tflite
+!models/model_full_int8.tflite
 saved_model/
 SavedModel/
 checkpoints/
 checkpoint
 *.ckpt*
 *.pb
-*.tflite
 
 # Datasets / arrays
 *.npy
