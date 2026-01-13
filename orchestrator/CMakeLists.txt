@@ -11,6 +11,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(odas_ros_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -30,6 +31,7 @@ ament_target_dependencies(listener
     std_msgs
     geometry_msgs
     nav_msgs
+    sensor_msgs
 )
 
 add_executable(odas_listener src/soundgoal.cpp)
