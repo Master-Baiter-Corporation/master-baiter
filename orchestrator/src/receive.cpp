@@ -19,6 +19,7 @@
 
 // Obstacle avoidance parameters
 #define OBSTACLE_DETECTION_DISTANCE 0.4  // meters
+#define ROTATION_OBSTACLE_DETECTION_DISTANCE (OBSTACLE_DETECTION_DISTANCE * 0.5f)
 #define OBSTACLE_CLEAR_DISTANCE 0.4      // meters - distance considered "clear"
 #define OBSTACLE_MARGIN_ANGLE 0.1        // radians - margin from obstacle when finding clear path
 #define AVOIDANCE_FORWARD_TIME 3.0       // seconds to go forward after obstacle avoidance
@@ -220,7 +221,7 @@ private:
     
     void handle_rotating_to_goal(double angle_to_goal, geometry_msgs::msg::Twist& twist_msg) {
         // Check for obstacles
-        if (has_scan_data_ && detect_obstacle()) {
+        if (has_scan_data_ && detect_obstacle(ROTATION_OBSTACLE_DETECTION_DISTANCE)) {
             RCLCPP_INFO(this->get_logger(), "Obstacle detected during rotation!");
             nav_state_ = OBSTACLE_DETECTED;
             return;
@@ -240,7 +241,7 @@ private:
     
     void handle_moving_to_goal(double distance, double angle_to_goal, geometry_msgs::msg::Twist& twist_msg) {
         // Check for obstacles
-        if (has_scan_data_ && detect_obstacle()) {
+        if (has_scan_data_ && detect_obstacle(OBSTACLE_DETECTION_DISTANCE)) {
             RCLCPP_INFO(this->get_logger(), "Obstacle detected while moving!");
             nav_state_ = OBSTACLE_DETECTED;
             return;
@@ -297,7 +298,7 @@ private:
         }
         
         // Check if we hit another obstacle while avoiding
-        if (has_scan_data_ && detect_obstacle()) {
+        if (has_scan_data_ && detect_obstacle(OBSTACLE_DETECTION_DISTANCE)) {
             RCLCPP_INFO(this->get_logger(), "Another obstacle during avoidance!");
             nav_state_ = OBSTACLE_DETECTED;
             return;
@@ -332,7 +333,7 @@ private:
     
     // ========== Obstacle Detection Functions ==========
     
-    bool detect_obstacle() {
+    bool detect_obstacle(float detection_distance) {
         if (!has_scan_data_ || scan_data_.ranges.empty()) {
             return false;
         }
@@ -348,7 +349,7 @@ private:
             float range = scan_data_.ranges[i];
             if (std::isfinite(range) && range > 0.1) {  // Ignore noise near 0
                 valid_readings++;
-                if (range < OBSTACLE_DETECTION_DISTANCE) {
+                if (range < detection_distance) {
                     obstacle_readings++;
                 }
             }
@@ -358,7 +359,7 @@ private:
             float range = scan_data_.ranges[i];
             if (std::isfinite(range) && range > 0.1) {  // Ignore noise near 0
                 valid_readings++;
-                if (range < OBSTACLE_DETECTION_DISTANCE) {
+                if (range < detection_distance) {
                     obstacle_readings++;
                 }
             }
@@ -375,39 +376,41 @@ private:
     
     bool is_left_side_clearer() {
         if (!has_scan_data_ || scan_data_.ranges.empty()) {
-            return true;  // Default to left
+            return true;  // default
         }
-        
-        int num_readings = scan_data_.ranges.size();
-        int quarter = num_readings / 4;
-        
-        // Analyze right side (45-135 degrees) - indices go counterclockwise
-        float right_avg = 0.0;
-        int right_count = 0;
-        for (int i = quarter; i < quarter * 2; i++) {
-            if (std::isfinite(scan_data_.ranges[i])) {
-                right_avg += scan_data_.ranges[i];
-                right_count++;
+
+        float left_min = std::numeric_limits<float>::infinity();
+        float right_min = std::numeric_limits<float>::infinity();
+
+        for (size_t i = 0; i < scan_data_.ranges.size(); ++i) {
+            float r = scan_data_.ranges[i];
+            if (!std::isfinite(r)) continue;
+            if (r < scan_data_.range_min || r > scan_data_.range_max) continue;
+
+            float angle = scan_data_.angle_min + i * scan_data_.angle_increment;
+
+            // RIGHT: -90° to -30°
+            if (angle > -M_PI / 2 && angle < -M_PI / 6) {
+                right_min = std::min(right_min, r);
+            }
+
+            // LEFT: +30° to +90°
+            else if (angle > M_PI / 6 && angle < M_PI / 2) {
+                left_min = std::min(left_min, r);
             }
         }
-        right_avg = (right_count > 0) ? right_avg / right_count : 0.0;
-        
-        // Analyze left side (225-315 degrees)
-        float left_avg = 0.0;
-        int left_count = 0;
-        for (int i = quarter * 3; i < num_readings; i++) {
-            if (std::isfinite(scan_data_.ranges[i])) {
-                left_avg += scan_data_.ranges[i];
-                left_count++;
-            }
-        }
-        left_avg = (left_count > 0) ? left_avg / left_count : 0.0;
-        
-        RCLCPP_INFO(this->get_logger(), "Left avg: %.2f, Right avg: %.2f", left_avg, right_avg);
-        
-        return left_avg > right_avg;
+
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Left min: %.2f, Right min: %.2f",
+            left_min,
+            right_min
+        );
+
+        // Prefer the side with more clearance
+        return left_min > right_min;
     }
-    
+        
     bool is_path_clear_with_margin() {
         if (!has_scan_data_ || scan_data_.ranges.empty()) {
             return false;
