@@ -5,6 +5,7 @@ from tensorflow import keras
 import tensorflow as tf
 from difflib import SequenceMatcher
 import argparse
+import time
 
 SR = 16000
 N_MELS = 64
@@ -172,28 +173,38 @@ if __name__ == "__main__":
     print(f"Hardcoded true labels: {y_true}")
 
     print("\n--- Modèle de base ---")
-    probs, top, triggers = predict_file(interpreter_base, WAV_PATH, label_names, hop_s=0.25)
+    start = time.perf_counter()
+    probs, top, triggers = predict_file(interpreter_base, WAV_PATH, label_names, hop_s=0.05)
+    end = time.perf_counter()
     print(triggers)
     results = sequence_accuracy(y_true, triggers)
     print(f"  Accuracy: {results['accuracy']:.2%} ({results['matches']}/{results['total_true']} detected)")
     print(f"  Precision: {results['precision']:.2%} ({results['matches']}/{results['total_pred']} correct)")
     print(f"  Missing detections: {results['missing']}")
     print(f"  False detections: {results['extra']}")
+    print(f"Temps d'exécution : {end - start:.4f} secondes")
+
 
     input("\nAppuyez sur Entrée pour le modèle PRUNED...")
-    probs, top, triggers = predict_file(interpreter_pruned, WAV_PATH, label_names, hop_s=0.25)
+    start = time.perf_counter()
+    probs, top, triggers = predict_file(interpreter_pruned, WAV_PATH, label_names, hop_s=0.05)
+    end = time.perf_counter()
     print(triggers)
     results = sequence_accuracy(y_true, triggers)
     print(f"  Accuracy: {results['accuracy']:.2%} ({results['matches']}/{results['total_true']} detected)")
     print(f"  Precision: {results['precision']:.2%} ({results['matches']}/{results['total_pred']} correct)")
     print(f"  Missing detections: {results['missing']}")
     print(f"  False detections: {results['extra']}")
+    print(f"Temps d'exécution : {end - start:.4f} secondes")
 
     input("\nAppuyez sur Entrée pour le modèle QUANTIZED...")
-    probs, top, triggers = predict_file(interpreter_quant, WAV_PATH, label_names, hop_s=0.25)
+    start = time.perf_counter()
+    probs, top, triggers = predict_file(interpreter_quant, WAV_PATH, label_names, hop_s=0.05)
+    end = time.perf_counter()
     print(triggers)
     results = sequence_accuracy(y_true, triggers)
     print(f"  Accuracy: {results['accuracy']:.2%} ({results['matches']}/{results['total_true']} detected)")
     print(f"  Precision: {results['precision']:.2%} ({results['matches']}/{results['total_pred']} correct)")
     print(f"  Missing detections: {results['missing']}")
     print(f"  False detections: {results['extra']}")
+    print(f"Temps d'exécution : {end - start:.4f} secondes")
