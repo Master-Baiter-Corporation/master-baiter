@@ -34,9 +34,13 @@ pip-wheel-metadata/
 *.h5
 *.tflite
 *.keras
+*.onnx
 !models/yamnet_finetuned_model.tflite
 !models/model_pruned.tflite
 !models/model_full_int8.tflite
+!models/onnx_models/yamnet_finetuned_model.onnx
+!models/onnx_models/model_pruned.onnx
+!models/onnx_models/model_full_int8.onnx
 saved_model/
 SavedModel/
 checkpoints/
@@ -49,7 +53,6 @@ checkpoint
 *.npz
 *.pt
 *.pth
-*.onnx
 
 ############################
 # Audio (évite de commiter des gros sons)
