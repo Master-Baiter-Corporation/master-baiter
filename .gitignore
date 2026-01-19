@@ -34,9 +34,7 @@ pip-wheel-metadata/
 *.h5
 *.tflite
 *.keras
-!models/yamnet_finetuned_model.tflite
-!models/model_pruned.tflite
-!models/model_full_int8.tflite
+!models/*.tflite
 saved_model/
 SavedModel/
 checkpoints/
