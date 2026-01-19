@@ -44,6 +44,10 @@ votre_projet/
 
 ### 1. Installer Python et les dépendances
 
+#### Mettre en place le fichier audio de test
+
+Télécharger le fichier `a.wav` à ce lien [Google drive](https://drive.google.com/file/d/1tT084T0W7SYNBM1O1SYqbdSdIIRic2OI/view?usp=sharing) et le placer dans le dossier `data/sound_test/` (voir arbre au dessus).
+
 #### Sur MacBook M2 ou ordinateur standard
 ```bash
 # Créer un environnement virtuel (recommandé)

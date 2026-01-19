@@ -14,7 +14,7 @@ Master Baiter is an intelligent autonomous robot built on the TurtleBot3 platfor
 ## Hardware Requirements
 - TurtleBot3 (Burger)
 - Camera module (compatible with ROS2)
-- Microphone for voice input
+- Respeaker "6-Mic circular Array" (cf. `SETUP_RESPEAKER.md` tutorial)
 - LiDAR sensor (included with TurtleBot3)
 
 ## Software Requirements
