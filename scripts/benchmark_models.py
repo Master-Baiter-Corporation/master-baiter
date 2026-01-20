@@ -35,8 +35,8 @@ def sequence_accuracy(y_true, y_pred):
         'matches': matches,
         'total_true': len(y_true),
         'total_pred': len(y_pred),
-        'missing': len(y_true) - matches,  # Missed detections
-        'extra': len(y_pred) - matches      # False detections
+        'missing': len(y_true) - matches,
+        'extra': len(y_pred) - matches
     }
 
 def load_tflite(path):
@@ -84,7 +84,7 @@ def run_tflite_predict(interpreter, data):
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
-    # Gestion de la quantization INT8 (keep this if you want)
+    # handle int8 quantization
     if input_details[0]['dtype'] == np.int8:
         scale, zero_point = input_details[0]['quantization']
         data = (data / scale + zero_point).astype(np.int8)
@@ -96,7 +96,7 @@ def run_tflite_predict(interpreter, data):
     output = interpreter.get_tensor(output_details[0]['index'])
     t1 = time.perf_counter()
 
-    # collect stats (skip a few warmup runs)
+    # collect stats
     if INFER_STATS["warmup_left"] > 0:
         INFER_STATS["warmup_left"] -= 1
     else:
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     results = []
     for i, (name, model_path) in enumerate(models_to_test):
         if not model_path.exists():
-            print(f"\n⚠️  SKIP: {name} - Fichier non trouvé: {model_path.name}")
+            print(f"\nSKIP: {name} - Fichier non trouvé: {model_path.name}")
             continue
 
         try:
@@ -253,9 +253,8 @@ if __name__ == "__main__":
                 input("\nAppuyez sur Entrée pour continuer...")
 
         except Exception as e:
-            print(f"\n❌ ERROR testing {name}: {e}")
+            print(f"\nERROR testing {name}: {e}")
 
-    # Summary table
     if results:
         print("\n\n" + "="*90)
         print("TABLEAU RÉCAPITULATIF")
@@ -268,8 +267,7 @@ if __name__ == "__main__":
 
         print("="*90)
 
-        # Best models
-        print("\n🏆 MEILLEURS MODÈLES:")
+        print("\nMEILLEURS MODÈLES:")
         best_accuracy = max(results, key=lambda x: x['accuracy'])
         best_size = min(results, key=lambda x: x['size_kb'])
         best_speed = min(results, key=lambda x: x['time'])

@@ -6,10 +6,8 @@ from difflib import SequenceMatcher
 import argparse
 import time
 
-# --- Stats d'inférence ---
 INFER_STATS = {"times": [], "warmup_left": 5}
 
-# --- Constantes Audio ---
 SR = 16000
 N_MELS = 64
 N_FRAMES = 96
@@ -25,7 +23,7 @@ def sequence_accuracy(y_true, y_pred):
     """Calculate accuracy accounting for insertions/deletions"""
     matcher = SequenceMatcher(None, y_true, y_pred)
     matches = sum(block.size for block in matcher.get_matching_blocks())
-    
+
     accuracy = matches / len(y_true) if len(y_true) > 0 else 0
     precision = matches / len(y_pred) if len(y_pred) > 0 else 0
     
@@ -40,17 +38,17 @@ def sequence_accuracy(y_true, y_pred):
     }
 
 def load_coral_tflite(path):
-    """Charge le modèle spécifiquement pour la Google Coral"""
+    """Charge le modèle spécifiquement pour la Google Coral & exécute sur CPU sinon"""
     try:
         interpreter = tflite.Interpreter(
             model_path=str(path),
             experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')]
         )
         interpreter.allocate_tensors()
-        print("✅ Modèle chargé avec succès sur l'accélérateur Coral !")
+        print("Modèle chargé avec succès sur l'accélérateur Coral !")
         return interpreter
     except Exception as e:
-        print(f"❌ Erreur lors du chargement de la Coral : {e}")
+        print(f"Erreur lors du chargement de la Coral : {e}")
         print("Vérifiez que la clé est branchée et que libedgetpu1-std est installé.")
         exit(1)
 
@@ -89,7 +87,7 @@ def run_tflite_predict(interpreter, data):
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
-    # Le modèle Coral est OBLIGATOIREMENT INT8
+    # model is always quantized in int8
     scale, zero_point = input_details[0]['quantization']
     data_int8 = (data / scale + zero_point).astype(np.int8)
 
@@ -101,7 +99,7 @@ def run_tflite_predict(interpreter, data):
     
     output = interpreter.get_tensor(output_details[0]['index'])
 
-    # Collect stats (skip warmup runs)
+    # Collect stats
     if INFER_STATS["warmup_left"] > 0:
         INFER_STATS["warmup_left"] -= 1
     else:
@@ -215,7 +213,7 @@ if __name__ == "__main__":
     if not WAV_PATH.exists():
         raise FileNotFoundError(f"WAV not found: {WAV_PATH}")
 
-    # Define Coral-compatible models to test (INT8 only)
+    # Define Coral-compatible models to test (INT8 only) & edgetpu compiled
     models_to_test = [
         ("INT8 Quantization (Coral)", MODELS_DIR / "model_int8_edgetpu.tflite"),
         ("Pruning 50% + INT8 (Coral)", MODELS_DIR / "model_pruned_50_int8_edgetpu.tflite"),
@@ -242,7 +240,7 @@ if __name__ == "__main__":
     results = []
     for i, (name, model_path) in enumerate(models_to_test):
         if not model_path.exists():
-            print(f"\n⚠️  SKIP: {name} - Fichier non trouvé: {model_path.name}")
+            print(f"\nSKIP: {name} - Fichier non trouvé: {model_path.name}")
             continue
 
         try:
@@ -255,7 +253,7 @@ if __name__ == "__main__":
                 input("\nAppuyez sur Entrée pour continuer...")
 
         except Exception as e:
-            print(f"\n❌ ERROR testing {name}: {e}")
+            print(f"\nERROR testing {name}: {e}")
 
     if results:
         print("\n\n" + "="*90)
@@ -269,7 +267,7 @@ if __name__ == "__main__":
 
         print("="*90)
 
-        print("\n🏆 MEILLEURS MODÈLES:")
+        print("\nMEILLEURS MODÈLES:")
         best_accuracy = max(results, key=lambda x: x['accuracy'])
         best_size = min(results, key=lambda x: x['size_kb'])
         best_speed = min(results, key=lambda x: x['time'])
