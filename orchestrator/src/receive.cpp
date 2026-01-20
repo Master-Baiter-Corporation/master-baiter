@@ -90,6 +90,7 @@ private:
         else if (msg.data == "recule") {
             twist_msg.linear.x = 0.0;
             twist_msg.angular.z = 0.0;
+            stop_navigation();
         }
         else if (msg.data == "gauche") {
             twist_msg.linear.x = 0.0;
