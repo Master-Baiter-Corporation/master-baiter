@@ -6,8 +6,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# ==================== CONFIGURATION ====================
-TRAINED_MODEL_PATH = "yamnet_trained_model.h5"  # Your previously trained model
+TRAINED_MODEL_PATH = "yamnet_trained_model.h5"  # may change
 NEW_DATASET_PATH = "audio_bot_dataset_augmented.npz"
 OUTPUT_MODEL_PATH = "yamnet_finetuned_model.h5"
 OUTPUT_TFLITE_PATH = "yamnet_finetuned_model.tflite"
@@ -15,30 +14,27 @@ OUTPUT_TFLITE_PATH = "yamnet_finetuned_model.tflite"
 # Fine-tuning parameters
 EPOCHS = 50
 BATCH_SIZE = 32
-LEARNING_RATE = 0.0001  # Lower LR for fine-tuning (10x smaller than initial training)
+LEARNING_RATE = 0.0001  # Lower LR for fine-tuning
 
 print("="*70)
 print(" " * 15 + "Fine-Tuning YAMNet Model (Full Network)")
 print("="*70)
 
-# ==================== LOAD SAVED MODEL ====================
 print("\n[1/6] Loading previously trained model...")
 model = keras.models.load_model(TRAINED_MODEL_PATH)
 print(f"✓ Model loaded from '{TRAINED_MODEL_PATH}'")
 print(f"  Input shape: {model.input_shape}")
 print(f"  Output shape: {model.output_shape}")
 
-# ==================== UNFREEZE ALL LAYERS ====================
 print("\n[2/6] Unfreezing all layers for fine-tuning...")
 model.trainable = True
 for layer in model.layers:
     layer.trainable = True
 
 trainable_count = sum([tf.size(w).numpy() for w in model.trainable_weights])
-print(f"✓ All layers unfrozen")
-print(f"  Total trainable parameters: {trainable_count:,}")
+print(f"All layers unfrozen")
+print(f"Total trainable parameters: {trainable_count:,}")
 
-# ==================== RECOMPILE WITH LOWER LR ====================
 print("\n[3/6] Recompiling model with lower learning rate...")
 model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=LEARNING_RATE),
@@ -47,27 +43,26 @@ model.compile(
 )
 print(f"✓ Model recompiled with learning rate: {LEARNING_RATE}")
 
-# ==================== LOAD NEW DATASET ====================
 print("\n[4/6] Loading new dataset...")
 data = np.load(NEW_DATASET_PATH, allow_pickle=True)
 X = data['X']
 y = data['y']
 label_names = data['label_names'].tolist()
 
-print(f"✓ Dataset loaded from '{NEW_DATASET_PATH}'")
-print(f"  Total samples: {len(X)}")
-print(f"  Input shape: {X.shape}")
+print(f"Dataset loaded from '{NEW_DATASET_PATH}'")
+print(f"Total samples: {len(X)}")
+print(f"Input shape: {X.shape}")
 
 if X.shape[1:3] == (64, 96):
-    print("\n⚠️  Detected dimension mismatch - transposing data...")
+    print("\nDetected dimension mismatch - transposing data...")
     X = np.transpose(X, (0, 2, 1, 3))
-    print(f"  New shape after transpose: {X.shape}")
+    print(f"New shape after transpose: {X.shape}")
 
 print(f"  Number of classes: {len(label_names)}")
 print(f"  Classes: {label_names}")
 
 # Class distribution
-print("\n  Class distribution:")
+print("\nClass distribution:")
 for idx, label in enumerate(label_names):
     count = np.sum(y == idx)
     percentage = (count / len(y)) * 100
@@ -80,7 +75,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"\n  Training set: {len(X_train)} samples")
 print(f"  Test set: {len(X_test)} samples")
 
-# ==================== FINE-TUNE MODEL ====================
 print("\n[5/6] Fine-tuning entire model...")
 print("="*70)
 
@@ -115,9 +109,8 @@ history = model.fit(
     verbose=1
 )
 
-print("\n✓ Fine-tuning completed!")
+print("\nFine-tuning completed!")
 
-# ==================== EVALUATE ====================
 print("\n[6/6] Evaluating fine-tuned model...")
 print("="*70)
 
@@ -127,8 +120,8 @@ y_pred = np.argmax(y_pred_probs, axis=1)
 
 # Overall accuracy
 test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
-print(f"\n✓ Test Loss: {test_loss:.4f}")
-print(f"✓ Test Accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
+print(f"\nTest Loss: {test_loss:.4f}")
+print(f"Test Accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
 
 # Per-class accuracy
 print("\nPer-class accuracy:")
@@ -144,12 +137,10 @@ print("Classification Report:")
 print("-"*60)
 print(classification_report(y_test, y_pred, target_names=label_names))
 
-# ==================== SAVE MODELS ====================
 print("\nSaving fine-tuned models...")
 model.save(OUTPUT_MODEL_PATH)
-print(f"✓ Model saved to '{OUTPUT_MODEL_PATH}'")
+print(f"Model saved to '{OUTPUT_MODEL_PATH}'")
 
-# Convert to TFLite
 print(f"\nConverting to TFLite...")
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
@@ -159,10 +150,9 @@ with open(OUTPUT_TFLITE_PATH, 'wb') as f:
     f.write(tflite_model)
 
 file_size = len(tflite_model) / (1024 * 1024)
-print(f"✓ TFLite model saved to '{OUTPUT_TFLITE_PATH}'")
-print(f"  Model size: {file_size:.2f} MB")
+print(f"TFLite model saved to '{OUTPUT_TFLITE_PATH}'")
+print(f"Model size: {file_size:.2f} MB")
 
-# ==================== PLOT TRAINING HISTORY ====================
 print("\nGenerating training plots...")
 
 fig, axes = plt.subplots(1, 2, figsize=(15, 5))
@@ -187,7 +177,7 @@ axes[1].grid(True, alpha=0.3)
 
 plt.tight_layout()
 plt.savefig('finetuning_history.png', dpi=300, bbox_inches='tight')
-print(f"✓ Training history saved as 'finetuning_history.png'")
+print(f"Training history saved as 'finetuning_history.png'")
 plt.show()
 
 # Confusion Matrix
@@ -207,16 +197,15 @@ plt.xticks(rotation=45, ha='right')
 plt.yticks(rotation=0)
 plt.tight_layout()
 plt.savefig('finetuned_confusion_matrix.png', dpi=300, bbox_inches='tight')
-print(f"✓ Confusion matrix saved as 'finetuned_confusion_matrix.png'")
+print(f"Confusion matrix saved as 'finetuned_confusion_matrix.png'")
 plt.show()
 
-# ==================== SUMMARY ====================
 print("\n" + "="*70)
 print(" " * 20 + "FINE-TUNING COMPLETED!")
 print("="*70)
-print(f"  📁 {OUTPUT_MODEL_PATH} - Fine-tuned Keras model")
-print(f"  📁 {OUTPUT_TFLITE_PATH} - Fine-tuned TFLite model")
-print(f"  📁 best_finetuned_model.h5 - Best checkpoint")
-print(f"  📁 finetuning_history.png - Training curves")
-print(f"  📁 finetuned_confusion_matrix.png - Confusion matrix")
+print(f"  {OUTPUT_MODEL_PATH} - Fine-tuned Keras model")
+print(f"  {OUTPUT_TFLITE_PATH} - Fine-tuned TFLite model")
+print(f"  best_finetuned_model.h5 - Best checkpoint")
+print(f"  finetuning_history.png - Training curves")
+print(f"  finetuned_confusion_matrix.png - Confusion matrix")
 print("="*70)

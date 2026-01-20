@@ -15,13 +15,12 @@ class AudioSpectrogramDataset:
         self.root_dir = root_dir
         self.sample_rate = sample_rate
         
-        # Spectrogram parameters matching YAMNet
         self.n_mels = 64
         self.n_frames = 96
-        self.fft_window_ms = 25  # milliseconds
-        self.hop_length_ms = 10  # milliseconds
-        self.fmin = 125  # Hz
-        self.fmax = 7500  # Hz
+        self.fft_window_ms = 25
+        self.hop_length_ms = 10
+        self.fmin = 125
+        self.fmax = 7500
         
         # Calculate FFT parameters
         self.n_fft = int(self.fft_window_ms * self.sample_rate / 1000)
@@ -296,11 +295,9 @@ def load_dataset(file_path):
     return X, y, label_names, metadata
 
 
-# ==================== USAGE EXAMPLE ====================
-
 if __name__ == "__main__":
     # Configuration
-    ROOT_DIR = "../../audios_bot/"  # Change this to your folder path
+    ROOT_DIR = "../../audios_bot/"  # may chanage (you need to have in this folder a folder for each classname with all the audio files of each class)
     OUTPUT_FILE = "audio__bot_dataset_augmented.npz"  # Output filename
     
     # Create dataset

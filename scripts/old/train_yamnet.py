@@ -87,7 +87,7 @@ class YAMNetTransferLearning:
         trainable_count = sum([tf.size(w).numpy() for w in self.model.trainable_weights])
         non_trainable_count = sum([tf.size(w).numpy() for w in self.model.non_trainable_weights])
         
-        print("\n✓ Model compiled successfully!")
+        print("\n  Model compiled successfully!")
         print(f"  Total trainable parameters: {trainable_count:,}")
         print(f"  Total non-trainable parameters: {non_trainable_count:,}")
         print(f"  Optimizer: Adam (lr={learning_rate})")
@@ -146,7 +146,7 @@ class YAMNetTransferLearning:
             verbose=1
         )
         
-        print("\n✓ Training completed!")
+        print("\n Training completed!")
         return self.history
     
     def evaluate(self, X_test, y_test, label_names):
@@ -161,8 +161,8 @@ class YAMNetTransferLearning:
         
         # Calculate accuracy
         test_loss, test_acc = self.model.evaluate(X_test, y_test, verbose=0)
-        print(f"\n✓ Test Loss: {test_loss:.4f}")
-        print(f"✓ Test Accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
+        print(f"\n Test Loss: {test_loss:.4f}")
+        print(f" Test Accuracy: {test_acc:.4f} ({test_acc*100:.2f}%)")
         
         # Per-class accuracy
         print("\nPer-class accuracy:")
@@ -183,7 +183,7 @@ class YAMNetTransferLearning:
         
         return y_pred, cm
     
-    def plot_training_history(self, save_path='training_history.png'):
+    def plot_training_history(self):
         """Plot training history"""
         if self.history is None:
             print("No training history available")
@@ -210,8 +210,6 @@ class YAMNetTransferLearning:
         axes[1].grid(True, alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"✓ Training history plot saved as '{save_path}'")
         plt.show()
     
     def plot_confusion_matrix(self, cm, label_names, save_path='confusion_matrix.png'):
@@ -235,13 +233,13 @@ class YAMNetTransferLearning:
         plt.yticks(rotation=0)
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"✓ Confusion matrix saved as '{save_path}'")
+        print(f" Confusion matrix saved as '{save_path}'")
         plt.show()
     
     def save_model(self, filepath='yamnet_trained_model.h5'):
         """Save the trained model"""
         self.model.save(filepath)
-        print(f"✓ Model saved to '{filepath}'")
+        print(f" Model saved to '{filepath}'")
     
     def save_tflite(self, filepath='yamnet_trained_model.tflite'):
         """Convert and save model as TFLite for deployment"""
@@ -255,7 +253,7 @@ class YAMNetTransferLearning:
         
         # Print file size
         file_size = len(tflite_model) / (1024 * 1024)
-        print(f"✓ TFLite model saved to '{filepath}'")
+        print(f" TFLite model saved to '{filepath}'")
         print(f"  Model size: {file_size:.2f} MB")
 
 
@@ -266,11 +264,8 @@ def load_dataset(file_path):
     X = data['X']
     y = data['y']
     label_names = data['label_names'].tolist()
-    print(f"✓ Dataset loaded successfully")
+    print(f" Dataset loaded successfully")
     return X, y, label_names
-
-
-# ==================== MAIN TRAINING SCRIPT ====================
 
 if __name__ == "__main__":
     print("="*70)
@@ -279,17 +274,17 @@ if __name__ == "__main__":
     print("="*70)
     
     # Configuration
-    BACKBONE_PATH = "yamnet_1024_f32.h5"  # Pre-trained backbone
-    DATASET_PATH = "audio_dataset_augmented.npz"  # Your dataset
+    BACKBONE_PATH = "yamnet_1024_f32.h5"
+    DATASET_PATH = "audio_dataset_augmented.npz"
     MODEL_SAVE_PATH = "yamnet_trained_model.h5"
     TFLITE_SAVE_PATH = "yamnet_trained_model.tflite"
     
     # Training parameters
-    EPOCHS = 100  # Can train longer since only training classification head
+    EPOCHS = 100
     BATCH_SIZE = 32
     LEARNING_RATE = 0.001
     
-    # Step 1: Load dataset
+    # Load dataset
     print("\n" + "="*70)
     print("STEP 1: Loading Dataset")
     print("="*70)
@@ -306,7 +301,7 @@ if __name__ == "__main__":
         percentage = (count / len(y)) * 100
         print(f"    {label}: {count} samples ({percentage:.1f}%)")
     
-    # Step 2: Split dataset (80/20)
+    # Split dataset (80/20)
     print("\n" + "="*70)
     print("STEP 2: Splitting Dataset (80% train, 20% test)")
     print("="*70)
@@ -323,7 +318,7 @@ if __name__ == "__main__":
         percentage = (count / len(y_train)) * 100
         print(f"    {label}: {count} samples ({percentage:.1f}%)")
     
-    # Step 3: Build model with pre-trained backbone
+    # Build model with pre-trained backbone
     print("\n" + "="*70)
     print("STEP 3: Building Model with Pre-trained Backbone")
     print("="*70)
@@ -341,7 +336,7 @@ if __name__ == "__main__":
     # Compile model
     yamnet.compile_model(learning_rate=LEARNING_RATE)
     
-    # Step 4: Train model (only classification head)
+    # Train model (only classification head)
     print("\n" + "="*70)
     print("STEP 4: Training Classification Head")
     print("="*70)
@@ -358,14 +353,14 @@ if __name__ == "__main__":
     print("="*70)
     y_pred, cm = yamnet.evaluate(X_test, y_test, label_names)
     
-    # Step 6: Visualize results
+    # Visualize results
     print("\n" + "="*70)
     print("STEP 6: Generating Visualizations")
     print("="*70)
     yamnet.plot_training_history()
     yamnet.plot_confusion_matrix(cm, label_names)
     
-    # Step 7: Save model
+    # Save model
     print("\n" + "="*70)
     print("STEP 7: Saving Models")
     print("="*70)
@@ -376,9 +371,8 @@ if __name__ == "__main__":
     print("\n" + "="*70)
     print(" " * 25 + "TRAINING COMPLETED!")
     print("="*70)
-    print(f"  📁 {MODEL_SAVE_PATH} - Full Keras model")
-    print(f"  📁 {TFLITE_SAVE_PATH} - TFLite model for deployment")
+    print(f"  {MODEL_SAVE_PATH} - Full Keras model")
+    print(f"  {TFLITE_SAVE_PATH} - TFLite model for deployment")
     print(f"  best_model.h5 - Best model checkpoint")
-    print(f"  training_history.png - Training curves")
     print(f"  confusion_matrix.png - Confusion matrix")
     print("="*70)
