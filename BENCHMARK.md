@@ -144,7 +144,7 @@ Ce script teste uniquement les modèles compilés pour Edge TPU.
 
 2. **Compiler les modèles pour Edge TPU**
 
-Les modèles `.tflite` normaux ne fonctionnent pas sur le Coral. Vous devez les compiler. Pour ce benchmark, nous avons fournis les versions des modèles déjà compilé en edgetpu. Si besoin
+Les modèles `.tflite` normaux ne fonctionnent pas sur le Coral. Vous devez les compiler. Pour ce benchmark, nous avons fournis les versions des modèles déjà compilé en edgetpu, mais si besoin :
 
 #### Compiler sur colab
 1. Allez sur https://colab.research.google.com/github/khanhlvg/tflite_raspberry_pi/blob/main/object_detection/Compile_for_edge_tpu.ipynb
