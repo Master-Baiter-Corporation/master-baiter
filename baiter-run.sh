@@ -38,7 +38,7 @@ docker run -it \
   --env="DISPLAY=$DISPLAY" \
   -e WAYLAND_DISPLAY=wayland-0 \
   -p 2222:22 \
-  --mount type=bind,source=/home/logan/dev/master-baiter,target=/home/dev/app \
+  --mount type=bind,source=../master-baiter,target=/home/dev/app \
   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
   -e XDG_RUNTIME_DIR=/tmp \
   -e NVIDIA_VISIBLE_DEVICES=all \
