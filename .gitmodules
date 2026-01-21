@@ -1,3 +1,3 @@
-[submodule "Turtlebot3"]
-	path = Turtlebot3
-	url = git@github.com:gerald-rocher/Turtlebot3.git
+[submodule "gerald-turtlebot3"]
+	path = gerald-turtlebot3
+	url = git@github.com:Master-Baiter-Corporation/gerald-turtlebot3.git
