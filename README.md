@@ -1,6 +1,9 @@
 # Master Baiter
 The best futuristic robot to help you daily. Master the bait with Master Baiter.
 
+## Demo instructions
+Please refer to [this French tutorial](./DEMO.md) to play the demo.
+
 ## Overview
 Master Baiter is an intelligent autonomous robot built on the TurtleBot3 platform using ROS2. Combining AI-powered speech recognition and computer vision, this robot can navigate environments using voice commands and autonomously approach recognized individuals.
 
