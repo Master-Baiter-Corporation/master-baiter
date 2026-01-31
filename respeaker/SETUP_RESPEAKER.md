@@ -160,15 +160,16 @@ sudo docker run hello-world
     * Recréer le fichier d'échange : `sudo dphys-swapfile setup`
     * Activer notre nouvelle swap : `sudo dphys-swapfile swapon`
 
-17. Se placer dans le dossier où les fichier "Dockerfile", "configuration.cfg" et "ros_entrypoint.sh" se trouvent
+17. Copier les fichiers "Dockerfile", "configuration.cfg" et "ros_entrypoint.sh" donnés dans un même dossier sur la Raspberry Pi puis se placer dans celui-ci
 
-18. Construire l'image Docker : `docker build -t ros:aptgetter .` **Attention cela prend au moins une trentaine de minutes (partez faire autre chose en attendant)**
+18. Construire l'image Docker : `docker build -t ros:aptgetter .` \
+**Attention cela prend au moins une trentaine de minutes (partez faire autre chose en attendant)**
 
-19. Lancer le conteneur Docker : `docker run -d -it --name mon_conteneur --device /dev/snd --net=host --privileged ros:aptgetter`
+19. Créer le conteneur Docker : `docker run -d -it --name mon_conteneur --device /dev/snd --device /dev/ttyACM0 --net=host --privileged ros:aptgetter`
 
 20. Ouvrir un terminal sur le conteneur en cours d'exécution (plusieurs terminaux sur le même conteneur peuvent être ouvert grâce à cette méthode) : `docker exec -it mon_conteneur /bin/bash`
 
-21. Modifier le fichier '/root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py' en remplaçant la ligne 13 (qui contient originallement "import sensor_msgs.point_cloud2 as pcl2  # type: ignore") par "from sensor_msgs_py import point_cloud2 as pcl2"
+21. Modifier les fichiers '/root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py' et '/root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py' en remplaçant dans les deux la ligne n°13 (qui contient originallement "import sensor_msgs.point_cloud2 as pcl2  # type: ignore") par "from sensor_msgs_py import point_cloud2 as pcl2" : `nano /root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py` puis `nano /root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py`
 
 22. Se placer dans le dossier "/root/ros2_ws/" et lancer le nœud ROS ODAS :
 ```sh
@@ -199,7 +200,7 @@ root@respeaker:~/ros2_ws# ros2 topic list
 /sst_poses
 ```
 
-24. Lancer la commande `ros2 topic echo /ssl` poru écouter le topic sur lequel est publiée la Localisation de Sources Sonores (SSL - Sound Source Localization) qui détecte les sources sonores potentielles sur une sphère unitaire autour des microphones. Cela fourni des données sur sa position (x,y,z) et son énergie E.\
+24. Lancer la commande `ros2 topic echo /ssl` poru écouter le topic sur lequel est publiée la Localisation de Sources Sonores (SSL - Sound Source Localization) qui détecte les sources sonores potentielles sur une sphère unitaire autour des microphones. Cela fourni des données sur sa position (x,y,z) et son énergie e.\
 Le résultat devrait ressembler à ça :
 ```
 root@respeaker:~/ros2_ws# ros2 topic echo /ssl
@@ -235,5 +236,5 @@ sources:
 
  - Quitter le terminal du conteneur Docker (et revenir à un terminal de la Raspberry Pi) : `exit`
  - Stopper le conteneur Docker avant d'éteindre la Pi : `docker stop mon_conteneur`
- - Relancer le conteneur une fois que l'on revient sur la Pi : : `docker start mon_conteneur`
-
+ - Relancer le conteneur une fois que l'on revient sur la Pi : `docker start mon_conteneur`
+ - Supprimer le conteneur qui a été stoppé : `docker rm mon_conteneur`
