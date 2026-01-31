@@ -13,7 +13,7 @@ def generate_launch_description():
     model_path_arg = DeclareLaunchArgument(
         'model_path',
         default_value='',
-        description='Path to the TFLite model file. If empty, uses default from package.'
+        description='Path to the Vosk model directory.'
     )
     
     input_topic_arg = DeclareLaunchArgument(
@@ -30,7 +30,7 @@ def generate_launch_description():
     
     confidence_threshold_arg = DeclareLaunchArgument(
         'confidence_threshold',
-        default_value='0.5',
+        default_value='1.0',
         description='Minimum confidence threshold for command recognition'
     )
     
@@ -44,7 +44,7 @@ def generate_launch_description():
             'model_path': LaunchConfiguration('model_path'),
             'input_topic': LaunchConfiguration('input_topic'),
             'output_topic': LaunchConfiguration('output_topic'),
-            'commands': ['forward', 'backward', 'left', 'right', 'stop'],
+            'commands': ["avance", "droite", "gauche", "lucien", "recule"],
             'confidence_threshold': LaunchConfiguration('confidence_threshold'),
         }],
         emulate_tty=True,
