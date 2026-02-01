@@ -62,15 +62,12 @@ RUN mkdir -p /root/ros2_ws/src
 
 WORKDIR /root/ros2_ws/src
 
-RUN git clone https://github.com/introlab/audio_utils.git    
+RUN git clone https://github.com/introlab/audio_utils.git && \
+    git clone https://github.com/introlab/odas_ros.git
 
 WORKDIR /root/ros2_ws/src/audio_utils
 
 RUN git submodule update --init --recursive
-
-WORKDIR /root/ros2_ws/src
-
-RUN git clone https://github.com/introlab/odas_ros.git
 
 WORKDIR /root/ros2_ws/src/odas_ros
 
