@@ -55,7 +55,7 @@ class AudioBridgeOdasToVosk(Node):
         self.total_packets_received = 0
         self.total_wavs_published = 0
         
-        self.get_logger().info("Audio Bridge ODAS->Vosk Node Started")
+        self.get_logger().info("Audio Bridge ODAS -> Vosk Node Started")
         self.get_logger().info(f"Window duration: {self.window_duration * 1000:.0f} ms")
         self.get_logger().info(f"Publishing interval: {self.publish_interval * 1000:.0f} ms ({1/self.publish_interval:.0f} Hz)")
         self.get_logger().info(f"Source: {self.src_sr} Hz -> Target: {self.target_sr} Hz")
@@ -72,7 +72,7 @@ class AudioBridgeOdasToVosk(Node):
         try:
             raw_data = np.frombuffer(msg.data, dtype=np.int16).astype(np.float32)
         except Exception as e:
-            self.get_logger().error(f"Erreur lors de la conversion des données: {e}")
+            self.get_logger().error(f"Error while converting raw data: {e}")
             return
             
         raw_data = raw_data / 32768.0  # Normalisation entre -1.0 et 1.0
@@ -81,7 +81,7 @@ class AudioBridgeOdasToVosk(Node):
         try:
             chunk_per_channel = raw_data.reshape(-1, self.n_channels)
         except ValueError as e:
-            self.get_logger().warn(f"Taille de paquet invalide reçue: {len(raw_data)} samples, erreur: {e}")
+            self.get_logger().warn(f"Invalid packet size received: {len(raw_data)} samples, error: {e}")
             return
         
         # 3. Sélection du canal actif (Celui avec le plus d'énergie dans ce chunk)
@@ -94,9 +94,9 @@ class AudioBridgeOdasToVosk(Node):
         if self.total_packets_received % 100 == 0:
             max_energy = energies[active_channel_idx]
             self.get_logger().debug(
-                f"Packet #{self.total_packets_received}: "
-                f"Canal actif={active_channel_idx}, "
-                f"Énergie={max_energy:.2f}, "
+                f"Packet {self.total_packets_received}: "
+                f"Active channel={active_channel_idx}, "
+                f"Energy={max_energy:.2f}, "
                 f"Samples={len(active_samples)}"
             )
         
@@ -122,7 +122,7 @@ class AudioBridgeOdasToVosk(Node):
         # Si le buffer est quasiment vide (silence), on peut choisir de ne pas publier
         # Seuil arbitraire : si l'énergie totale < 0.01, c'est probablement du silence
         if buffer_energy < 0.01:
-            self.get_logger().debug("Buffer contient principalement du silence, publication ignorée")
+            self.get_logger().debug("Buffer contains mainly silence, publication ignored")
             return
         
         # B. Ré-échantillonnage (44100 Hz -> 16000 Hz)
@@ -143,7 +143,7 @@ class AudioBridgeOdasToVosk(Node):
                 wf.setframerate(self.target_sr)     # 16000 Hz
                 wf.writeframes(audio_int16.tobytes())
         except Exception as e:
-            self.get_logger().error(f"Erreur lors de la création du fichier WAV: {e}")
+            self.get_logger().error(f"Error while creating WAV file: {e}")
             return
         
         # Récupérer les octets du fichier complet (Header + Data)
@@ -159,10 +159,10 @@ class AudioBridgeOdasToVosk(Node):
         # Log périodique
         if self.total_wavs_published % 20 == 0:  # Toutes les secondes (20 Hz)
             self.get_logger().info(
-                f"Publié {self.total_wavs_published} WAV | "
-                f"Taille: {len(wav_bytes)} bytes | "
-                f"Durée: {len(audio_int16)/self.target_sr*1000:.0f} ms | "
-                f"Énergie: {buffer_energy:.2f}"
+                f"Published {self.total_wavs_published} WAV | "
+                f"Size: {len(wav_bytes)} bytes | "
+                f"Duration: {len(audio_int16)/self.target_sr*1000:.0f} ms | "
+                f"Energy: {buffer_energy:.2f}"
             )
 
 
@@ -175,7 +175,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        node.get_logger().info(f"Arrêt du nœud. Total paquets reçus: {node.total_packets_received}, WAV publiés: {node.total_wavs_published}")
+        node.get_logger().info(f"Stopping node. Total packets received: {node.total_packets_received}, WAV published: {node.total_wavs_published}")
         node.destroy_node()
         rclpy.shutdown()
 

@@ -34,7 +34,6 @@ def generate_launch_description():
         description='Minimum confidence threshold for command recognition'
     )
     
-    # Define the node
     speech_recognition_node = Node(
         package='speech_recognition',
         executable='speech_recognition_node',
@@ -49,6 +48,13 @@ def generate_launch_description():
         }],
         emulate_tty=True,
     )
+
+    bridge_odas_ai_node = Node(
+        package='bridge_odas_ai',
+        executable='bridge',
+        name='bridge',
+        output='screen',
+    )
     
     return LaunchDescription([
         model_path_arg,
@@ -56,4 +62,5 @@ def generate_launch_description():
         output_topic_arg,
         confidence_threshold_arg,
         speech_recognition_node,
+        bridge_odas_ai_node,
     ])

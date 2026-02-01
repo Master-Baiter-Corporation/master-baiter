@@ -244,7 +244,7 @@ def main(args=None):
         pass
     finally:
         node.get_logger().info(
-            f"Node stopping. "
+            f"Stopping node. "
             f"Processed: {node.total_processed}, "
             f"Recognized: {node.total_recognized}"
         )
