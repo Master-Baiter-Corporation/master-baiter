@@ -58,7 +58,7 @@ class AudioBridgeOdasToVosk(Node):
         self.get_logger().info("Audio Bridge ODAS->Vosk Node Started")
         self.get_logger().info(f"Window duration: {self.window_duration * 1000:.0f} ms")
         self.get_logger().info(f"Publishing interval: {self.publish_interval * 1000:.0f} ms ({1/self.publish_interval:.0f} Hz)")
-        self.get_logger().info(f"Source: {self.src_sr} Hz → Target: {self.target_sr} Hz")
+        self.get_logger().info(f"Source: {self.src_sr} Hz -> Target: {self.target_sr} Hz")
     
     def listener_callback(self, msg):
         """
