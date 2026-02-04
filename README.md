@@ -17,7 +17,7 @@ Master Baiter is an intelligent autonomous robot built on the TurtleBot3 platfor
 ## Hardware Requirements
 - TurtleBot3 (Burger)
 - Camera module (compatible with ROS2)
-- Respeaker "6-Mic circular Array" (cf. `SETUP_RESPEAKER.md` tutorial)
+- Respeaker "6-Mic circular Array" (cf. `respeaker/SETUP_RESPEAKER.md` tutorial)
 - LiDAR sensor (included with TurtleBot3)
 
 ## Software Requirements
@@ -64,9 +64,9 @@ Master Baiter is an intelligent autonomous robot built on the TurtleBot3 platfor
 
 ## The Master Baiter team
 
-Élian Delmas
-Antoine Desmartin
-Logan Lucas
+Élian Delmas \
+Antoine Desmartin \
+Logan Lucas \
 Valentin Quiot
 
 ---
