@@ -167,17 +167,26 @@ sudo docker run hello-world
 
 19. Créer le conteneur Docker : `docker run -d -it --name mon_conteneur --device /dev/snd --device /dev/ttyACM0 --net=host --privileged ros:aptgetter`
 
-20. Ouvrir un terminal sur le conteneur en cours d'exécution (plusieurs terminaux sur le même conteneur peuvent être ouvert grâce à cette méthode) : `docker exec -it mon_conteneur /bin/bash`
+20. Ouvrir un terminal sur le conteneur en cours d'exécution (plusieurs terminaux sur le même conteneur peuvent être ouverts grâce à cette méthode) : `docker exec -it mon_conteneur /bin/bash`
 
-21. Modifier les fichiers '/root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py' et '/root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py' en remplaçant dans les deux la ligne n°13 (qui contient originallement "import sensor_msgs.point_cloud2 as pcl2  # type: ignore") par "from sensor_msgs_py import point_cloud2 as pcl2" : `nano /root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py` puis `nano /root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py`
+21. Modifier les fichiers '/root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py' et '/root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py' en remplaçant dans les deux la ligne n°13 (qui contient originallement "import sensor_msgs.point_cloud2 as pcl2  # type: ignore") par "from sensor_msgs_py import point_cloud2 as pcl2" :
+`nano /root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py` \
+puis \
+`nano /root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py`
 
-22. Se placer dans le dossier "/root/ros2_ws/" et lancer le nœud ROS ODAS :
+22. Exécuter le fichier "flash_opencr.sh" qui se trouve dans le dossier "/root" (qui est aussi le dossier ~) :
+```sh
+cd /root/
+./flash_opencr.sh
+```
+
+23. Se placer dans le dossier "/root/ros2_ws/" et lancer le nœud ROS ODAS :
 ```sh
 cd /root/ros2_ws/
 ros2 launch odas_ros odas.launch.xml configuration_path:=$PWD/src/odas_ros/odas_ros/config/configuration.cfg rviz:=false visualization:=true
 ```
 
-23. Vérifier que le nœud ROS tourne bien en lançant les commandes suivantes dans un autre terminal (voir étape 20. pour ouvrir un autre terminal sur le même conteneur) :
+24. Vérifier que le nœud ROS tourne bien en lançant les commandes suivantes dans un autre terminal (voir étape 20. pour ouvrir un autre terminal sur le même conteneur) :
 ```sh
 ros2 node list
 ros2 topic list
@@ -200,7 +209,7 @@ root@respeaker:~/ros2_ws# ros2 topic list
 /sst_poses
 ```
 
-24. Lancer la commande `ros2 topic echo /ssl` poru écouter le topic sur lequel est publiée la Localisation de Sources Sonores (SSL - Sound Source Localization) qui détecte les sources sonores potentielles sur une sphère unitaire autour des microphones. Cela fourni des données sur sa position (x,y,z) et son énergie e.\
+25. Lancer la commande `ros2 topic echo /ssl` pour écouter le topic sur lequel est publiée la Localisation de Sources Sonores (SSL - Sound Source Localization) qui détecte les sources sonores potentielles sur une sphère unitaire autour des microphones. Cela fourni des données sur sa position (x,y,z) et son énergie e.\
 Le résultat devrait ressembler à ça :
 ```
 root@respeaker:~/ros2_ws# ros2 topic echo /ssl
@@ -229,12 +238,25 @@ sources:
 ---
 ```
 
-25. Et là, comme m'a dit Gemini suite à notre très longue conversation :
+26. Dans un autre terminal, effectuer l'étape 20. pour ouvrir un second terminal sur le conteneur et exécuter le fichier "ros2_turtlebot_start.sh" qui se trouve dans le dossier "/root" (qui est aussi le dossier ~) :
+```sh
+cd /root/
+./ros2_turtlebot_start.sh
+```
+
+27. Et là, comme m'a dit Gemini suite à notre très longue conversation :
  > "Bravo pour votre persévérance ! Vous avez maintenant un système de localisation sonore fonctionnel sur votre Raspberry Pi."
 
 ### Au cas où
 
- - Quitter le terminal du conteneur Docker (et revenir à un terminal de la Raspberry Pi) : `exit`
- - Stopper le conteneur Docker avant d'éteindre la Pi : `docker stop mon_conteneur`
- - Relancer le conteneur une fois que l'on revient sur la Pi : `docker start mon_conteneur`
- - Supprimer le conteneur qui a été stoppé : `docker rm mon_conteneur`
+ - Lorsque vous avez terminé et que vous souhaitez éteindre la Raspberry Pi :
+    1. Quitter le terminal du conteneur Docker (et revenir à un terminal de la Raspberry Pi) : `exit`
+    2. Stopper le conteneur Docker avant d'éteindre la Pi : `docker stop mon_conteneur`
+    3. Éteindre la Pi avec la commande `sudo shutdown now`
+
+ - Lorsque vous revenez ensuite sur la Raspberry Pi :
+    1. Se replacer dans le dossier où se trouvent les fichiers "Dockerfile", "configuration.cfg" et "ros_entrypoint.sh"
+    2. Relancer le conteneur une fois que l'on revient sur la Pi : `docker start mon_conteneur`
+    3. Effectuer de nouveau les étapes **20.**, **23.** et **26.** de ce guide pour remettre en fonctionnement ODAS et les packages ROBOTIS (permettant les mouvements du robot)
+
+ - Sinon, pour supprimer le conteneur qui a été stoppé : `docker rm mon_conteneur`
