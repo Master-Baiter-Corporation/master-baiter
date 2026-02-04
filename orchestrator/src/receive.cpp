@@ -13,7 +13,7 @@
 
 #define POSITION_TOLERANCE 0.01  // meters
 #define ANGULAR_TOLERANCE 0.05   // radians
-#define LINEAR_SPEED 0.3
+#define LINEAR_SPEED 0.1
 #define ANGULAR_SPEED 0.5
 #define ROTATION_LINEAR_SPEED 0.1  // Slow forward speed while rotating
 
@@ -84,7 +84,7 @@ private:
         auto twist_msg = geometry_msgs::msg::Twist();
         
         if (msg.data == "avance") {
-            twist_msg.linear.x = 0.5;
+            twist_msg.linear.x = 0.1;
             twist_msg.angular.z = 0.0;
         }
         else if (msg.data == "recule") {
