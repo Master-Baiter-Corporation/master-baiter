@@ -19,14 +19,14 @@ make install-debian
 
 5. Lancer la commande `dkms` pour vérifier que l'installation s'est bien passée
 
-6. Utiliser le repository de Mr LAVIROTTE pour installer les drivers de la plateforme
+6. Utiliser le repository de Mr LAVIROTTE pour installer les drivers de la plateforme :
 ```sh
 cd ~/Desktop
 export GIT_SSL_NO_VERIFY=true
 git clone https://ubinas.polytech.unice.fr:38443/platform/respeaker/mics_hat.git
 ```
 
-7. Modifier le fichier 'install.sh' qui se trouve à la racine du répertoire 'mics_hat' avec `nano ~/mics_hat/install.sh` : corriger la ligne 18, puis, entre les lignes 20 et 21 du fichier, ajouter la ligne `git reset --hard c8d97904ceacf848346029f176c23cc74addb733` pour revenir à la version de mai 2021 du driver de la plateforme Respeaker. \
+7. Modifier le fichier 'install.sh' qui se trouve à la racine du répertoire 'mics_hat' avec `nano ~/mics_hat/install.sh` : corriger la ligne 18, puis, entre les lignes 20 et 21 du fichier, ajouter la ligne `git reset --hard c8d97904ceacf848346029f176c23cc74addb733` pour revenir à la version de mai 2021 du driver de la plateforme Respeaker \
 Une fois cela fait, le fichier devrait ressembler à ça :
 ```
 18 | cd ~/Desktop
@@ -129,7 +129,7 @@ plughw:CARD=seeed8micvoicec,DEV=0
     Hardware device with all software conversions
 ```
 
-11. Tester que l'enregistrement se passe bien avec la commande `arecord -Dac108 -f S32_LE -r 16000 -c 8 -d 3 ~/a.wav` qui va démarrer un enregistrement audio via les micros de la plateforme respeaker d'une durée de 3 secondes (VS Code peut lire les fichiers .wav donc vous pouvez l'écouter juste après pour vérifier le bon déroulé de l'enregistrement)
+11. Tester que l'enregistrement se passe bien avec la commande `arecord -Dac108 -f S32_LE -r 16000 -c 8 -d 3 ~/a.wav` qui va démarrer un enregistrement audio de 3 secondes via les micros de la plateforme respeaker (VS Code peut lire les fichiers .wav donc vous pouvez l'écouter juste après pour vérifier sa bonne acquisition)
 
 12. Modifier le fichier '/etc/apt/sources.list' avec la commande `sudo nano /etc/apt/sources.list` pour ajouter la ligne `deb https://download.docker.com/linux/debian/ buster main contrib non-free` en début de fichier
 
@@ -154,7 +154,7 @@ sudo systemctl start docker
 sudo docker run hello-world
 ```
 
-16. Modifier la taille de la swap du Raspberry Pi (nécessaire pour la compilation du package ROS plus tard) : 
+16. Modifier la taille de la swap du Raspberry Pi (nécessaire pour la compilation des packages ROS plus tard) : 
     * Désactiver la swap actuelle : `sudo dphys-swapfile swapoff`
     * Modifier la taille dans le fichier '/etc/dphys-swapfile' : `sudo nano /etc/dphys-swapfile` pour changer la valeur de la variable `CONF_SWAPSIZE` à `4096` et décommenter la variable `CONF_MAXSWAP` pour mettre sa valeur à `4096`
     * Recréer le fichier d'échange : `sudo dphys-swapfile setup`
@@ -167,31 +167,24 @@ sudo docker run hello-world
 
 19. Créer le conteneur Docker : `docker run -d -it --name mon_conteneur --device /dev/snd --device /dev/ttyACM0 --net=host --privileged ros:aptgetter`
 
-20. Ouvrir un terminal sur le conteneur en cours d'exécution (plusieurs terminaux sur le même conteneur peuvent être ouverts grâce à cette méthode) : `docker exec -it mon_conteneur /bin/bash`
+20. Ouvrir un terminal sur le conteneur ainsi créé (plusieurs terminaux dans un même conteneur peuvent être ouverts grâce à cette méthode) : `docker exec -it mon_conteneur /bin/bash`
 
-21. Modifier les fichiers '/root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py' et '/root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py' en remplaçant dans les deux la ligne n°13 (qui contient originallement "import sensor_msgs.point_cloud2 as pcl2  # type: ignore") par "from sensor_msgs_py import point_cloud2 as pcl2" :
+21. Modifier les fichiers '/root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py' et '/root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py' en remplaçant dans les deux la ligne n°13 (qui contient originallement "import sensor_msgs.point_cloud2 as pcl2  # type: ignore") par "from sensor_msgs_py import point_cloud2 as pcl2" : \
 `nano /root/ros2_ws/src/odas_ros/odas_ros/scripts/odas_visualization_node.py` \
 puis \
 `nano /root/ros2_ws/install/odas_ros/lib/odas_ros/odas_visualization_node.py`
 
-22. Exécuter le fichier "flash_opencr.sh" qui se trouve dans le dossier "/root" (qui est aussi le dossier ~) :
-```sh
-cd /root/
-./flash_opencr.sh
-```
+22. Exécuter le fichier "flash_opencr.sh" qui se trouve dans le dossier "/root" (qui est aussi le dossier personnel ~ du conteneur) : `/root/flash_opencr.sh`
 
-23. Se placer dans le dossier "/root/ros2_ws/" et lancer le nœud ROS ODAS :
+23. Se placer dans le dossier "/root/ros2_ws" et lancer le nœud ROS ODAS :
 ```sh
 cd /root/ros2_ws/
 ros2 launch odas_ros odas.launch.xml configuration_path:=$PWD/src/odas_ros/odas_ros/config/configuration.cfg rviz:=false visualization:=true
 ```
 
-24. Vérifier que le nœud ROS tourne bien en lançant les commandes suivantes dans un autre terminal (voir étape 20. pour ouvrir un autre terminal sur le même conteneur) :
-```sh
-ros2 node list
-ros2 topic list
-```
-Les résultats devraient ressembler à ça :
+24. Dans un nouveau terminal de la Raspberry Pi, réitérer l'étape 20. pour ouvrir un second terminal dans le conteneur et vérifier qu'ODAS tourne bien en lançant les commandes
+`ros2 node list` puis `ros2 topic list` \
+Les résultats devraient ressembler à :
 ```
 root@respeaker:~/ros2_ws# ros2 node list
 /odas_server_node
@@ -209,7 +202,7 @@ root@respeaker:~/ros2_ws# ros2 topic list
 /sst_poses
 ```
 
-25. Lancer la commande `ros2 topic echo /ssl` pour écouter le topic sur lequel est publiée la Localisation de Sources Sonores (SSL - Sound Source Localization) qui détecte les sources sonores potentielles sur une sphère unitaire autour des microphones. Cela fourni des données sur sa position (x,y,z) et son énergie e.\
+25. Lancer la commande `ros2 topic echo /ssl` pour écouter le topic de Sound Source Localization (SSL) qui détecte les sources sonores potentielles sur une sphère unitaire autour des microphones et fourni leur position (x,y,z) en plus de leur énergie e \
 Le résultat devrait ressembler à ça :
 ```
 root@respeaker:~/ros2_ws# ros2 topic echo /ssl
@@ -238,11 +231,7 @@ sources:
 ---
 ```
 
-26. Dans un autre terminal, effectuer l'étape 20. pour ouvrir un second terminal sur le conteneur et exécuter le fichier "ros2_turtlebot_start.sh" qui se trouve dans le dossier "/root" (qui est aussi le dossier ~) :
-```sh
-cd /root/
-./ros2_turtlebot_start.sh
-```
+26. Dans un autre terminal de la Raspberry Pi, effectuer une nouvelle fois l'étape 20. pour ouvrir un terminal supplémentaire sur le conteneur et exécuter : `/root/ros2_turtlebot_start.sh`
 
 27. Et là, comme m'a dit Gemini suite à notre très longue conversation :
  > "Bravo pour votre persévérance ! Vous avez maintenant un système de localisation sonore fonctionnel sur votre Raspberry Pi."
@@ -257,6 +246,6 @@ cd /root/
  - Lorsque vous revenez ensuite sur la Raspberry Pi :
     1. Se replacer dans le dossier où se trouvent les fichiers "Dockerfile", "configuration.cfg" et "ros_entrypoint.sh"
     2. Relancer le conteneur une fois que l'on revient sur la Pi : `docker start mon_conteneur`
-    3. Effectuer de nouveau les étapes **20.**, **23.** et **26.** de ce guide pour remettre en fonctionnement ODAS et les packages ROBOTIS (permettant les mouvements du robot)
+    3. Effectuer de nouveau les étapes **20.**, **23.** puis **26.** de ce guide pour remettre en fonctionnement ODAS et les packages ROBOTIS (permettant les mouvements du robot)
 
  - Sinon, pour supprimer le conteneur qui a été stoppé : `docker rm mon_conteneur`
