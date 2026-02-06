@@ -85,6 +85,7 @@ colcon build
 ### Prérequis
 
 - ROS2 Humble
+
 Il est également nécessaire d'avoir mené à bien la connection de la Raspberry Pi avec la plateforme Respeaker (voir [guide de mise en place du respeaker](./respeaker/SETUP_RESPEAKER.md)).
 
 ### Mise en place de l'environnement
