@@ -124,15 +124,14 @@ RUN wget https://github.com/ROBOTIS-GIT/OpenCR-Binaries/raw/master/turtlebot3/RO
     rm opencr_update.tar.bz2
 
 RUN echo -e "#!/bin/bash\n" > /root/flash_opencr.sh && \
-    echo "cd /root/opencr_update" >> /root/flash_opencr.sh && \
-    echo "./update.sh \$OPENCR_PORT \$OPENCR_MODEL.opencr" >> /root/flash_opencr.sh && \
+    echo "/root/opencr_update/update.sh \$OPENCR_PORT \$OPENCR_MODEL.opencr" >> /root/flash_opencr.sh && \
     chmod +x /root/flash_opencr.sh
 
 # ---------------------------------------------------
 # 8. Entrypoint & Default Command
 # ---------------------------------------------------
 RUN echo -e "#!/bin/bash\n" > /root/ros2_turtlebot_start.sh && \
-    echo "export ROS_DOMAIN_ID=<id>" >> /root/ros2_turtlebot_start.sh && \
+    echo "#export ROS_DOMAIN_ID=<id>" >> /root/ros2_turtlebot_start.sh && \
     echo "export TURTLEBOT3_MODEL=burger" >> /root/ros2_turtlebot_start.sh && \
     echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /root/ros2_turtlebot_start.sh && \
     echo -e "export LDS_MODEL=LDS-02\n" >> /root/ros2_turtlebot_start.sh && \
